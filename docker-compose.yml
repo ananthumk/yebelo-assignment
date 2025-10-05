@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   redpanda:
     image: redpandadata/redpanda:latest
@@ -12,15 +11,17 @@ services:
       - --node-id 0
       - --check=false
     ports:
-      - "9092:9092"   # Redpanda broker
-      - "9644:9644"   # Admin API
+      - "9092:9092"
+      - "9644:9644"
+    restart: unless-stopped
 
   redpanda-console:
     image: redpandadata/console:latest
     environment:
-     - REDPANDA_BROKERS=localhost:9092
-
+      - REDPANDA_BROKERS=redpanda:9092
     ports:
-      - "8080:8080"   # Console UI
+      - "8080:8080"
     depends_on:
       - redpanda
+    restart: unless-stopped
+

@@ -16,14 +16,35 @@ type RSIData = {
 };
 
 type Props = {
-  data: RSIData[];
+  data?: RSIData[]; // allow undefined
 };
 
-export default function RSIChart({ data }: Props) {
+function generateDummyData(count = 30): RSIData[] {
+  const now = Date.now();
+  const minute = 60_000;
+  const arr: RSIData[] = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const t = new Date(now - i * minute);
+    const time = t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    // pseudo-random but deterministic-ish pattern
+    const base = 50 + Math.round(Math.sin(i / 3) * 12);
+    const jitter = Math.round((Math.abs(Math.sin(i)) * 10) % 10) - 5;
+    let rsi = base + jitter;
+    if (rsi < 1) rsi = 1;
+    if (rsi > 99) rsi = 99;
+    arr.push({ time, rsi });
+  }
+  return arr;
+}
+
+export default function RSIChart({ data = [] }: Props) {
+  const usingDummy = !data || data.length === 0;
+  const chartData = usingDummy ? generateDummyData(30) : data;
+
   return (
     <div style={{ width: '100%', height: 220 }} className="mt-6">
-      <ResponsiveContainer>
-        <LineChart data={data}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData}>
           <CartesianGrid stroke="#eee" />
           <XAxis dataKey="time" />
           <YAxis domain={[0, 100]} />
@@ -33,6 +54,9 @@ export default function RSIChart({ data }: Props) {
           <Line type="monotone" dataKey="rsi" stroke="#82ca9d" dot={false} />
         </LineChart>
       </ResponsiveContainer>
+      {usingDummy && (
+        <div className="mt-2 text-xs text-gray-500">Displaying dummy RSI data because none was provided.</div>
+      )}
     </div>
   );
 }
