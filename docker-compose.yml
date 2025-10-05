@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  redpanda:
+    image: redpandadata/redpanda:latest
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --node-id 0
+      - --check=false
+    ports:
+      - "9092:9092"   # Redpanda broker
+      - "9644:9644"   # Admin API
+
+  redpanda-console:
+    image: redpandadata/console:latest
+    environment:
+     - REDPANDA_BROKERS=localhost:9092
+
+    ports:
+      - "8080:8080"   # Console UI
+    depends_on:
+      - redpanda
