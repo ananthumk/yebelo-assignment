@@ -5,8 +5,21 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 echo "Project root: $PROJECT_ROOT"
 
+# detect docker compose command
+if command -v docker-compose >/dev/null 2>&1; then
+  DC="docker-compose"
+elif docker compose version >/dev/null 2>&1; then
+  DC="docker compose"
+else
+  echo "Error: neither 'docker-compose' nor 'docker compose' is available in PATH."
+  echo "Install Docker Compose or use a Docker CLI that supports 'docker compose'."
+  exit 1
+fi
+
+echo "Using compose command: $DC"
+
 echo "1) Starting Docker services (Redpanda + console)..."
-docker-compose -f "$PROJECT_ROOT/docker-compose.yml" up -d
+$DC -f "$PROJECT_ROOT/docker-compose.yml" up -d
 
 echo "2) Waiting for Redpanda to start..."
 sleep 5
@@ -50,4 +63,4 @@ fi
 run_node_service "$PROJECT_ROOT/frontend-dashboard"
 
 echo "All startup commands issued. Check logs or terminals for output."
-echo "To tail docker logs: docker-compose -f \"$PROJECT_ROOT/docker-compose.yml\" logs -f"
+echo "To tail docker logs: $DC -f \"$PROJECT_ROOT/docker-compose.yml\" logs -f"
